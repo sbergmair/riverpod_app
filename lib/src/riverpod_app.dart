@@ -12,7 +12,7 @@ class RiverpodApp extends StatefulWidget {
   final Route<dynamic>? Function(RouteSettings settings) generateRoute;
   final void Function(ProviderContainer)? setupListeners;
   final ProviderContainer container;
-  final Future<String> Function( ProviderContainer ref) initialRoute;
+  final Future<String> Function(ProviderContainer ref) initialRoute;
   final bool hideBanner;
   final ThemeData theme;
   final ThemeData? darkThem;
@@ -45,7 +45,6 @@ class RiverpodApp extends StatefulWidget {
 }
 
 class RiverpodAppState extends State<RiverpodApp> {
-
   final _navigatorKey = GlobalKey<NavigatorState>(
     debugLabel: "BaseAppNavigatorKey",
   );
@@ -80,7 +79,6 @@ class RiverpodAppState extends State<RiverpodApp> {
       container: widget.container,
       child: Consumer(
         builder: (context, ref, _) {
-
           return Builder(
             builder: (context) {
               return MaterialApp(
@@ -104,8 +102,7 @@ class RiverpodAppState extends State<RiverpodApp> {
                   return wrap(
                     context,
                     Builder(
-                      builder:
-                          (context) =>
+                      builder: (context) =>
                           _materialAppBuilder(context, child, ref),
                     ),
                   );
@@ -142,11 +139,10 @@ class RiverpodAppState extends State<RiverpodApp> {
   }
 
   Widget _materialAppBuilder(
-      BuildContext context,
-      Widget? child,
-      WidgetRef ref,
-      ) {
-
+    BuildContext context,
+    Widget? child,
+    WidgetRef ref,
+  ) {
     final mediaQuery = MediaQuery.of(context);
 
     // the builder will be called avery time when the device brightness changes, so we don't need to listen to any additional changes
@@ -157,14 +153,6 @@ class RiverpodAppState extends State<RiverpodApp> {
       ),
       child: Builder(
         builder: (context) {
-          final overlayStyle =
-          Theme.of(context).appBarTheme.systemOverlayStyle!;
-
-          // We manually need to set the overlay style since not
-          // each screen has a appbar, and the default overlay style
-          // will be just used, when the scaffold has an appbar.
-          SystemChrome.setSystemUIOverlayStyle(overlayStyle);
-
           final finalWidget = _InitCallback(
             onInitialize: () {
               // When changing any properties in the MaterialApp
