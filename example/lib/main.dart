@@ -57,7 +57,5 @@ class _HomePageState extends ConsumerState<HomePage> {
         },
       ),
     );
-
-    return Scaffold(body: Center(child: Text("HomePage")));
   }
 }
