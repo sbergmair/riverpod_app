@@ -3,6 +3,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_app/riverpod_app.dart';
+import 'package:riverpod_app_example/presentation/generate_route.dart';
+import 'package:riverpod_app_example/provider.dart';
 
 Future<void> main() async {
   final appKey = GlobalKey<RiverpodAppState>();
@@ -18,7 +20,7 @@ Future<void> main() async {
         RiverpodApp(
           key: appKey,
           container: container!,
-          generateRoute: (_) => MaterialPageRoute(builder: (_) => HomePage()),
+          generateRoute: generateRoute,
           theme: ThemeData.light(),
           initialRoute: (_) async => "/home",
           hideBanner: false,
@@ -32,11 +34,30 @@ Future<void> main() async {
   );
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends ConsumerStatefulWidget {
+  static const routeName = "/home";
+
   const HomePage({super.key});
 
   @override
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    final init = ref.watch(provInit);
+
+    return Scaffold(
+      body: Center(
+        child: switch (init) {
+          AsyncError(:final error) => Text('Error: $error'),
+          AsyncData(:final value) => Text(value),
+          _ => const CircularProgressIndicator(),
+        },
+      ),
+    );
+
+    return Scaffold(body: Center(child: Text("HomePage")));
   }
 }
