@@ -90,7 +90,12 @@ class RiverpodAppState extends State<RiverpodApp> {
                 theme: widget.theme,
                 darkTheme: widget.darkThem,
                 themeMode: ThemeMode.system,
-                onGenerateRoute: widget.generateRoute,
+                onGenerateRoute: (settings) {
+                  if(settings.name == BlankPage.routeName) {
+                    return MaterialPageRoute(builder: (_)=>BlankPage());
+                  }
+                  return widget.generateRoute(settings);
+                },
                 navigatorObservers: [
                   defaultNavigatorObserver,
                   if (widget.additionalObserver != null)
