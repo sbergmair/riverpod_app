@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../riverpod_app.dart';
 import 'navigation/state_navigation_observer.dart';
 
 class RiverpodApp extends StatefulWidget {
@@ -85,6 +86,7 @@ class RiverpodAppState extends State<RiverpodApp> {
                 debugShowCheckedModeBanner: false,
                 title: widget.appTitle,
                 navigatorKey: _navigatorKey,
+                initialRoute: BlankPage.routeName,
                 theme: widget.theme,
                 darkTheme: widget.darkThem,
                 themeMode: ThemeMode.system,
