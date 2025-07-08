@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'navigation/blank_page.dart';
 import 'navigation/state_navigation_observer.dart';
 
 class RiverpodApp extends StatefulWidget {
@@ -15,6 +14,7 @@ class RiverpodApp extends StatefulWidget {
   final bool hideBanner;
   final ThemeData theme;
   final ThemeData? darkThem;
+  final String? appTitle;
 
   final Future<void> Function(ProviderContainer)? init;
   final Future<void> Function()? beforeSetInitialRoute;
@@ -33,6 +33,7 @@ class RiverpodApp extends StatefulWidget {
     this.init,
     this.beforeSetInitialRoute,
     this.wrapBaseApp,
+    this.appTitle,
   });
 
   @override
@@ -45,7 +46,7 @@ class RiverpodApp extends StatefulWidget {
 
 class RiverpodAppState extends State<RiverpodApp> {
   final _navigatorKey = GlobalKey<NavigatorState>(
-    debugLabel: "BaseAppNavigatorKey",
+    debugLabel: "RiverpodAppNavigatorKey",
   );
   final defaultNavigatorObserver = StateNavigationObserver();
 
@@ -82,12 +83,11 @@ class RiverpodAppState extends State<RiverpodApp> {
             builder: (context) {
               return MaterialApp(
                 debugShowCheckedModeBanner: false,
-                title: "TollNow",
+                title: widget.appTitle,
                 navigatorKey: _navigatorKey,
                 theme: widget.theme,
                 darkTheme: widget.darkThem,
                 themeMode: ThemeMode.system,
-                initialRoute: BlankPage.routeName,
                 onGenerateRoute: widget.generateRoute,
                 navigatorObservers: [
                   defaultNavigatorObserver,
