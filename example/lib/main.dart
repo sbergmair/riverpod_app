@@ -17,7 +17,7 @@ Future<void> main() async {
 
       container = ProviderContainer();
       runApp(
-        RiverpodApp(
+        RiverpodApp.classic(
           key: appKey,
           container: container!,
           generateRoute: generateRoute,
