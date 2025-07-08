@@ -228,12 +228,21 @@ class RiverpodAppState extends State<RiverpodApp> {
                   darkTheme: widget.darkThem,
                   themeMode: ThemeMode.system,
                   onGenerateRoute: (settings) {
+                    // Return route provided by usage first
+                    final route = widget.generateRoute!(settings);
+                    if(route != null) {
+                      return route;
+                    }
+                    // In case of no route provided, we use the splash screen
+                    // if the route is the splash screen route.
                     if(settings.name == _SplashOrBlankPage.routeName) {
                       return MaterialPageRoute(
                         builder: (_) => _SplashOrBlankPage(widget.splashScreen),
                       );
                     }
-                    return widget.generateRoute!(settings);
+                    // In case of no route provided, we return null
+                    // which will cause the app to throw an error.
+                    return null;
                   },
                   navigatorObservers: [
                     defaultNavigatorObserver,
@@ -344,7 +353,7 @@ class _InitCallbackState extends State<_InitCallback> {
 }
 
 class _SplashOrBlankPage extends StatelessWidget {
-  static const routeName = '/__splashOrBlank__';
+  static const routeName = '/';
   final Widget? splashScreen;
   const _SplashOrBlankPage(this.splashScreen);
 
@@ -352,6 +361,10 @@ class _SplashOrBlankPage extends StatelessWidget {
   Widget build(BuildContext context) {
     if (splashScreen != null) return splashScreen!;
     // Return an empty container so the native splash remains visible
-    return const SizedBox.shrink();
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Theme.of(context).scaffoldBackgroundColor,
+    );
   }
 }
