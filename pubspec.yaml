@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_riverpod: ^2.6.1
+  flutter_riverpod: ^3.0.3
   plugin_platform_interface: ^2.0.2
   rxdart: ^0.28.0
 
