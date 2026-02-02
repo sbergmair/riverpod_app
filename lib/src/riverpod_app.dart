@@ -21,20 +21,31 @@ class RiverpodApp extends StatefulWidget {
   /// Callback to determine the initial route to push after initialization (classic API).
   final Future<String> Function(ProviderContainer ref)? initialRoute;
 
-  /// Whether to hide the debug banner in the app.
+  /// Whether to hide the flavor banner overlay. Note: the Material debug
+  /// banner is always hidden; this controls the custom [Banner] widget that
+  /// displays the "flavor" compile-time constant.
   final bool hideBanner;
 
   /// The main theme for the app.
   final ThemeData theme;
 
   /// The dark theme for the app (optional).
-  final ThemeData? darkThem;
+  final ThemeData? darkTheme;
 
   /// The title of the app (optional).
   final String? appTitle;
 
   /// A widget to display as a splash screen during initialization. If null, the native splash remains visible until the first frame.
   final Widget? splashScreen;
+
+  /// The locale for the app (optional).
+  final Locale? locale;
+
+  /// The localization delegates for the app (optional).
+  final Iterable<LocalizationsDelegate<dynamic>>? localizationsDelegates;
+
+  /// The supported locales for the app (optional).
+  final Iterable<Locale>? supportedLocales;
 
   // Router API support
   /// The RouterDelegate for declarative navigation (Router API).
@@ -58,6 +69,10 @@ class RiverpodApp extends StatefulWidget {
   /// Optional wrapper for the base app widget, e.g., for adding overlays or global widgets.
   final Widget Function(BuildContext context, Widget)? wrapBaseApp;
 
+  /// Called when [init] or [initialRoute] throws an error. If not provided,
+  /// the error is rethrown and the app stays on the splash screen.
+  final void Function(Object error, StackTrace stackTrace)? onInitError;
+
   // Private constructor used by named constructors
   const RiverpodApp._({
     super.key,
@@ -66,7 +81,7 @@ class RiverpodApp extends StatefulWidget {
     this.setupListeners,
     required this.container,
     required this.theme,
-    this.darkThem,
+    this.darkTheme,
     this.initialRoute,
     required this.hideBanner,
     this.init,
@@ -78,6 +93,10 @@ class RiverpodApp extends StatefulWidget {
     this.routeInformationParser,
     this.routeInformationProvider,
     this.backButtonDispatcher,
+    this.onInitError,
+    this.locale,
+    this.localizationsDelegates,
+    this.supportedLocales,
   });
 
   /// Classic (imperative) navigation constructor
@@ -88,7 +107,7 @@ class RiverpodApp extends StatefulWidget {
     void Function(ProviderContainer)? setupListeners,
     required ProviderContainer container,
     required ThemeData theme,
-    ThemeData? darkThem,
+    ThemeData? darkTheme,
     required Future<String> Function(ProviderContainer ref) initialRoute,
     required bool hideBanner,
     Future<void> Function(ProviderContainer)? init,
@@ -96,6 +115,10 @@ class RiverpodApp extends StatefulWidget {
     Widget Function(BuildContext context, Widget)? wrapBaseApp,
     String? appTitle,
     Widget? splashScreen,
+    void Function(Object error, StackTrace stackTrace)? onInitError,
+    Locale? locale,
+    Iterable<LocalizationsDelegate<dynamic>>? localizationsDelegates,
+    Iterable<Locale>? supportedLocales,
   }) {
     return RiverpodApp._(
       key: key,
@@ -104,7 +127,7 @@ class RiverpodApp extends StatefulWidget {
       setupListeners: setupListeners,
       container: container,
       theme: theme,
-      darkThem: darkThem,
+      darkTheme: darkTheme,
       initialRoute: initialRoute,
       hideBanner: hideBanner,
       init: init,
@@ -112,6 +135,10 @@ class RiverpodApp extends StatefulWidget {
       wrapBaseApp: wrapBaseApp,
       appTitle: appTitle,
       splashScreen: splashScreen,
+      onInitError: onInitError,
+      locale: locale,
+      localizationsDelegates: localizationsDelegates,
+      supportedLocales: supportedLocales,
     );
   }
 
@@ -124,7 +151,7 @@ class RiverpodApp extends StatefulWidget {
     BackButtonDispatcher? backButtonDispatcher,
     required ProviderContainer container,
     required ThemeData theme,
-    ThemeData? darkThem,
+    ThemeData? darkTheme,
     required bool hideBanner,
     void Function(ProviderContainer)? setupListeners,
     Future<void> Function(ProviderContainer)? init,
@@ -132,6 +159,10 @@ class RiverpodApp extends StatefulWidget {
     Widget Function(BuildContext context, Widget)? wrapBaseApp,
     String? appTitle,
     Widget? splashScreen,
+    void Function(Object error, StackTrace stackTrace)? onInitError,
+    Locale? locale,
+    Iterable<LocalizationsDelegate<dynamic>>? localizationsDelegates,
+    Iterable<Locale>? supportedLocales,
   }) {
     return RiverpodApp._(
       key: key,
@@ -141,7 +172,7 @@ class RiverpodApp extends StatefulWidget {
       backButtonDispatcher: backButtonDispatcher,
       container: container,
       theme: theme,
-      darkThem: darkThem,
+      darkTheme: darkTheme,
       hideBanner: hideBanner,
       setupListeners: setupListeners,
       init: init,
@@ -149,6 +180,10 @@ class RiverpodApp extends StatefulWidget {
       wrapBaseApp: wrapBaseApp,
       appTitle: appTitle,
       splashScreen: splashScreen,
+      onInitError: onInitError,
+      locale: locale,
+      localizationsDelegates: localizationsDelegates,
+      supportedLocales: supportedLocales,
     );
   }
 
@@ -167,6 +202,12 @@ class RiverpodAppState extends State<RiverpodApp> {
   final defaultNavigatorObserver = StateNavigationObserver();
 
   NavigatorState get navigator => _navigatorKey.currentState!;
+
+  @override
+  void dispose() {
+    defaultNavigatorObserver.currentRouteSubject.close();
+    super.dispose();
+  }
 
   @visibleForTesting
   final initDoneCompleter = Completer<void>();
@@ -204,8 +245,11 @@ class RiverpodAppState extends State<RiverpodApp> {
                   debugShowCheckedModeBanner: false,
                   title: widget.appTitle,
                   theme: widget.theme,
-                  darkTheme: widget.darkThem,
+                  darkTheme: widget.darkTheme,
                   themeMode: ThemeMode.system,
+                  locale: widget.locale,
+                  localizationsDelegates: widget.localizationsDelegates,
+                  supportedLocales: widget.supportedLocales ?? const [Locale('en')],
                   routerDelegate: widget.routerDelegate!,
                   routeInformationParser: widget.routeInformationParser!,
                   routeInformationProvider: widget.routeInformationProvider,
@@ -225,8 +269,11 @@ class RiverpodAppState extends State<RiverpodApp> {
                   navigatorKey: _navigatorKey,
                   initialRoute: _SplashOrBlankPage.routeName,
                   theme: widget.theme,
-                  darkTheme: widget.darkThem,
+                  darkTheme: widget.darkTheme,
                   themeMode: ThemeMode.system,
+                  locale: widget.locale,
+                  localizationsDelegates: widget.localizationsDelegates,
+                  supportedLocales: widget.supportedLocales ?? const [Locale('en')],
                   onGenerateRoute: (settings) {
                     // Return route provided by usage first
                     final route = widget.generateRoute!(settings);
@@ -249,7 +296,7 @@ class RiverpodAppState extends State<RiverpodApp> {
                     if (widget.additionalObserver != null)
                       ...widget.additionalObserver!,
                   ],
-                  builder: (_, child) => wrap(
+                  builder: (context, child) => wrap(
                     context,
                     Builder(
                       builder: (context) => _materialAppBuilder(context, child, ref),
@@ -266,20 +313,34 @@ class RiverpodAppState extends State<RiverpodApp> {
 
   // The BaseApp initialize the Navigation and Translation for the app.
   Future<void> _initApp() async {
-    final ref = widget.container;
-    await widget.init?.call(ref);
-    if (!_baseAppSetupCompleter.isCompleted) _baseAppSetupCompleter.complete();
-    if (!mounted) return;
+    try {
+      final ref = widget.container;
+      await widget.init?.call(ref);
+      if (!_baseAppSetupCompleter.isCompleted) {
+        _baseAppSetupCompleter.complete();
+      }
+      if (!mounted) return;
 
-    final route = await widget.initialRoute!(ref);
+      // Declarative mode handles its own routing via RouterDelegate,
+      // so we only push the initial route in classic (imperative) mode.
+      if (widget.initialRoute != null) {
+        final route = await widget.initialRoute!(ref);
 
-    await widget.beforeSetInitialRoute?.call();
-    await _navigatorAddedCompleter.future;
-    if (!mounted) return;
+        await widget.beforeSetInitialRoute?.call();
+        await _navigatorAddedCompleter.future;
+        if (!mounted) return;
 
-    unawaited(_navigatorKey.currentState!.pushReplacementNamed(route));
+        unawaited(_navigatorKey.currentState!.pushReplacementNamed(route));
+      }
 
-    initDoneCompleter.complete();
+      if (!initDoneCompleter.isCompleted) initDoneCompleter.complete();
+    } catch (error, stackTrace) {
+      if (widget.onInitError != null) {
+        widget.onInitError!(error, stackTrace);
+      } else {
+        rethrow;
+      }
+    }
   }
 
   Widget _materialAppBuilder(
