@@ -35,6 +35,10 @@ cd example && fvm flutter run
 
 **Initialization flow:** `RiverpodApp` → runs `init` callback → waits for navigator → calls `beforeSetInitialRoute` → pushes async `initialRoute` → hides splash. Each phase gated by a `Completer`.
 
+## Git Conventions
+
+Do not add `Co-Authored-By` lines to commit messages.
+
 ## Lint Rules
 
 Uses `package:flutter_lints/flutter.yaml` with minimal overrides.

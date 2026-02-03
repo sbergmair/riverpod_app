@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'navigation/state_navigation_observer.dart';
 
+typedef SetupListeners = void Function(ProviderContainer, BuildContext);
+
 class RiverpodApp extends StatefulWidget {
   /// Additional route observers to be added to the navigator.
   final List<RouteObserver<PageRoute<Object?>>>? additionalObserver;
@@ -13,7 +15,7 @@ class RiverpodApp extends StatefulWidget {
   final Route<dynamic>? Function(RouteSettings settings)? generateRoute;
 
   /// Optional callback to set up listeners on the ProviderContainer.
-  final void Function(ProviderContainer)? setupListeners;
+  final SetupListeners? setupListeners;
 
   /// The Riverpod ProviderContainer used for dependency injection and state management.
   final ProviderContainer container;
@@ -104,7 +106,7 @@ class RiverpodApp extends StatefulWidget {
     Key? key,
     List<RouteObserver<PageRoute<Object?>>>? additionalObserver,
     required Route<dynamic>? Function(RouteSettings settings) generateRoute,
-    void Function(ProviderContainer)? setupListeners,
+    SetupListeners? setupListeners,
     required ProviderContainer container,
     required ThemeData theme,
     ThemeData? darkTheme,
@@ -153,7 +155,7 @@ class RiverpodApp extends StatefulWidget {
     required ThemeData theme,
     ThemeData? darkTheme,
     required bool hideBanner,
-    void Function(ProviderContainer)? setupListeners,
+    SetupListeners? setupListeners,
     Future<void> Function(ProviderContainer)? init,
     Future<void> Function()? beforeSetInitialRoute,
     Widget Function(BuildContext context, Widget)? wrapBaseApp,
@@ -227,7 +229,7 @@ class RiverpodAppState extends State<RiverpodApp> {
     // Important to setup listeners of [ProviderContainer] in initState.
     // Otherwise the listeners trigger multiple times for each instance.
     // This works differently here than with [WidgetRef].
-    widget.setupListeners?.call(widget.container);
+    widget.setupListeners?.call(widget.container, context);
   }
 
   @override
